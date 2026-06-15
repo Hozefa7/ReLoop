@@ -456,9 +456,9 @@ def page_home():
     st.write("")
     st.markdown("##### How it works")
     a, b, c = st.columns(3)
-    a.markdown("<div class='step'>**1 · Sell 📦<br><span class='rl-meta'>List an item you don't need — with a photo and condition.</span></div>", unsafe_allow_html=True)
-    b.markdown("<div class='step'>**2 · Buy 🛒<br><span class='rl-meta'>Browse the marketplace and add things to your cart.</span></div>", unsafe_allow_html=True)
-    c.markdown("<div class='step'>**3 · Loop ♻️<br><span class='rl-meta'>Each item gets reused or remade — not dumped.</span></div>", unsafe_allow_html=True)
+    a.markdown("<div class='step'>1 · Sell 📦<br><span class='rl-meta'>List an item you don't need — with a photo and condition.</span></div>", unsafe_allow_html=True)
+    b.markdown("<div class='step'>2 · Buy 🛒<br><span class='rl-meta'>Browse the marketplace and add things to your cart.</span></div>", unsafe_allow_html=True)
+    c.markdown("<div class='step'>3 · Loop ♻️<br><span class='rl-meta'>Each item gets reused or remade — not dumped.</span></div>", unsafe_allow_html=True)
 
     st.write("")
     st.markdown("##### What would you like to do?")
