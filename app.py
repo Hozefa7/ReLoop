@@ -448,8 +448,14 @@ def page_setup():
 def page_home():
     ticker(); brand()
     name = st.session_state.user.get("name", "there").split(" ")[0].title()
-    st.markdown(f"# Welcome, {name} 🌿")
-    st.markdown("#### ReLoop is a marketplace that keeps things out of landfills.")
+    st.markdown("""
+    <div class='hero-box'>
+        <h1>♻ ReLoop</h1>
+        <h2>Buy • Reuse • Recycle</h2>
+        <p>Keeping useful materials out of landfills and in the loop.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.write("**Reuse** still-usable goods, or **recycle** spent material by weight. "
              "Buy what others no longer need, or sell what you're done with.")
 
@@ -476,6 +482,12 @@ def page_home():
             if st.button("Sell an item", use_container_width=True):
                 go("sell"); st.rerun()
 
+    st.markdown("## 🌟 Featured Listings")
+    featured = all_items()[:3]
+    cols = st.columns(3)
+    for item, col in zip(featured, cols):
+        item_card(item, col)
+
     st.write("")
     m1, m2, m3 = st.columns(3)
     m1.metric("In your cart", f"{len(st.session_state.cart)} item(s)")
@@ -487,14 +499,13 @@ def page_market():
     st.markdown("## 🛒 Marketplace")
     st.caption("Everything listed — including items you post — shows up here.")
 
-    f1, f2, f3 = st.columns([1, 1, 2])
-    lane = f1.selectbox("Type", ["All", "Reuse", "Recycle"])
-    cat = f2.selectbox("Category", ["All"] + [CAT_NAME[c] for c in CAT_NAME])
-    q = f3.text_input("Search", placeholder="Search items…")
+    market_type = st.radio("Marketplace", ["All", "Reuse", "Recycle"], horizontal=True)
+    cat = st.selectbox("Category", ["All"] + [CAT_NAME[c] for c in CAT_NAME])
+    q = st.text_input("Search", placeholder="🔍 Search items...")
 
     items = all_items()
-    if lane != "All":
-        items = [i for i in items if i["lane"] == lane.lower()]
+    if market_type != "All":
+        items = [i for i in items if i["lane"] == market_type.lower()]
     if cat != "All":
         items = [i for i in items if i["cat"] == cat]
     if q.strip():
@@ -653,3 +664,19 @@ sidebar()
     "auth": page_auth, "setup": page_setup, "home": page_home, "market": page_market,
     "sell": page_sell, "cart": page_cart, "account": page_account,
 }.get(st.session_state.page, page_auth)()
+
+st.markdown("""
+<style>
+.hero-box{
+text-align:center;
+padding:60px;
+border-radius:25px;
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(12px);
+margin-bottom:20px;
+}
+.hero-box h1{font-size:72px;margin:0;}
+.hero-box h2{color:#7cf2a8;}
+.hero-box p{color:#d4f2df;font-size:18px;}
+</style>
+""", unsafe_allow_html=True)
