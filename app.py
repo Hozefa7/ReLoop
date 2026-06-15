@@ -212,70 +212,124 @@ def saved_kg():
     return sum(b["kg"] for b in st.session_state.purchased) + sum(p["kg"] for p in st.session_state.posted)
 
 # ======================================================================
-# STYLING + LIVING FOREST BACKGROUND
+# STYLING — animated aurora + dark glass (no image file required)
 # ======================================================================
-def forest_src():
+def forest_overlay():
+    """Optional: if images/forest.* exists, layer it faintly for texture."""
     for ext in (".jpg", ".jpeg", ".png", ".webp"):
         p = os.path.join("images", "forest" + ext)
         if os.path.exists(p):
             mime = "png" if ext == ".png" else ("webp" if ext == ".webp" else "jpeg")
-            return f"url('data:image/{mime};base64,{base64.b64encode(open(p,'rb').read()).decode()}')"
-    return "radial-gradient(120% 90% at 70% 8%, #1f5236 0%, #103324 42%, #07140d 100%)"
+            data = base64.b64encode(open(p, "rb").read()).decode()
+            return (f".stApp::after{{content:'';position:fixed;inset:0;z-index:-2;opacity:.28;"
+                    f"background:url('data:image/{mime};base64,{data}') center/cover no-repeat;"
+                    f"mix-blend-mode:luminosity}}")
+    return ""
 
 st.markdown(f"""
 <style>
-.stApp{{background:transparent}}
-[data-testid="stHeader"]{{background:transparent}}
-/* living forest layers */
-.stApp::before{{content:"";position:fixed;inset:-6%;z-index:-2;
-  background:{forest_src()} center/cover no-repeat;
-  animation:ken 50s ease-in-out infinite alternate}}
-.stApp::after{{content:"";position:fixed;inset:0;z-index:-1;
-  background:linear-gradient(180deg, rgba(5,15,9,.55), rgba(4,12,8,.72))}}
-@keyframes ken{{from{{transform:scale(1.02) translate(0,0)}}to{{transform:scale(1.16) translate(-2%,-3%)}}}}
+/* ---- make Streamlit transparent so our background shows ---- */
+.stApp,[data-testid="stAppViewContainer"],[data-testid="stHeader"]{{background:transparent !important}}
 
-/* readable content panel floating over the forest */
-.block-container{{max-width:1080px;margin-top:14px;padding:24px 30px 46px;
-  background:rgba(255,255,255,.95);border-radius:22px;
-  border:1px solid rgba(255,255,255,.6);
-  box-shadow:0 30px 80px -28px rgba(0,0,0,.7);color:#16241c}}
-.block-container p,.block-container li,.block-container label,
-[data-testid="stMarkdownContainer"]{{color:#243a2e}}
-h1,h2,h3,h4{{font-family:Georgia,'Times New Roman',serif;color:#103726 !important;letter-spacing:-.01em}}
+/* ---- animated emerald aurora (always works, no file) ---- */
+.stApp::before{{content:"";position:fixed;inset:-20%;z-index:-3;
+  background:
+    radial-gradient(38% 44% at 18% 22%, rgba(46,230,166,.30), transparent 60%),
+    radial-gradient(42% 50% at 82% 28%, rgba(20,160,110,.34), transparent 60%),
+    radial-gradient(50% 55% at 60% 88%, rgba(8,90,62,.40), transparent 62%),
+    linear-gradient(160deg,#04130d 0%,#082018 55%,#03100b 100%);
+  animation:drift 22s ease-in-out infinite alternate;filter:saturate(1.15)}}
+@keyframes drift{{0%{{transform:translate(0,0) scale(1.05)}}
+                 100%{{transform:translate(-3%,-3%) scale(1.18)}}}}
+{forest_overlay()}
 
-/* sidebar as its own readable panel */
-section[data-testid="stSidebar"] > div{{background:rgba(248,252,250,.96)}}
+/* floating leaves */
+.amb{{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}}
+.amb b{{position:absolute;bottom:-40px;font-size:22px;opacity:.5;animation:rise linear infinite}}
+@keyframes rise{{0%{{transform:translateY(0) rotate(0);opacity:0}}
+                10%{{opacity:.55}}90%{{opacity:.5}}
+                100%{{transform:translateY(-115vh) rotate(320deg);opacity:0}}}}
+
+/* ---- force readable light text everywhere ---- */
+.block-container{{max-width:1080px;padding-top:1.2rem}}
+.block-container, .block-container p, .block-container li, .block-container label,
+[data-testid="stMarkdownContainer"], [data-testid="stMarkdownContainer"] *{{color:#e9f6ee !important}}
+[data-testid="stCaptionContainer"], .block-container small{{color:#a9d2bd !important}}
+h1,h2,h3,h4{{font-family:'Trebuchet MS',Verdana,sans-serif !important;font-weight:800 !important;
+  color:#ffffff !important;letter-spacing:-.01em}}
+
+/* hero gradient title */
+.hero{{font-size:46px;line-height:1.05;font-weight:900;margin:.1em 0 .15em;
+  background:linear-gradient(92deg,#9ff5c8,#39e0a0 55%,#bff7d3);
+  -webkit-background-clip:text;background-clip:text;color:transparent}}
+
+/* ---- glass cards (st.container border) ---- */
+[data-testid="stVerticalBlockBorderWrapper"]{{
+  background:rgba(255,255,255,.07) !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  border-radius:18px !important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  box-shadow:0 18px 50px -24px rgba(0,0,0,.7)}}
+
+/* inputs readable in dark */
+.stTextInput input,.stTextInput textarea,[data-baseweb="input"] input,
+[data-baseweb="select"]>div,[data-baseweb="textarea"] textarea{{
+  background:rgba(255,255,255,.10) !important;color:#eafff2 !important;
+  border-color:rgba(255,255,255,.18) !important}}
+[data-testid="stFileUploaderDropzone"]{{background:rgba(255,255,255,.06) !important}}
+
+/* sidebar glass */
+section[data-testid="stSidebar"] > div{{background:rgba(6,22,15,.78) !important;backdrop-filter:blur(12px)}}
+section[data-testid="stSidebar"] *{{color:#e9f6ee !important}}
+
+/* buttons */
+.stButton>button{{border-radius:11px;border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);color:#eafff2 !important;font-weight:700}}
+.stButton>button:hover{{border-color:#39e0a0}}
+.stButton>button[kind="primary"]{{background:linear-gradient(92deg,#1ec98a,#34e89e) !important;
+  color:#06241a !important;border:none}}
 
 /* eco ticker */
-.rl-ticker{{position:relative;overflow:hidden;height:42px;display:flex;align-items:center;
-  background:linear-gradient(90deg,#0f7d44,#1ba35d);border-radius:12px;margin:2px 0 18px;
-  box-shadow:0 8px 20px -12px rgba(15,125,68,.6)}}
+.rl-ticker{{position:relative;overflow:hidden;height:44px;display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(11,75,52,.9),rgba(20,160,110,.85));
+  border:1px solid rgba(255,255,255,.14);border-radius:14px;margin:2px 0 20px;backdrop-filter:blur(6px)}}
 .rl-badge{{position:absolute;left:0;top:0;bottom:0;z-index:3;display:flex;align-items:center;gap:7px;
-  background:#0d2a1b;color:#fff;font-weight:800;font-size:12px;letter-spacing:.10em;padding:0 16px}}
+  background:#06241a;color:#7cf2a8 !important;font-weight:800;font-size:12px;letter-spacing:.12em;padding:0 16px}}
 .rl-badge .pulse{{width:8px;height:8px;border-radius:50%;background:#7cf2a8;animation:pls 1.2s ease-in-out infinite}}
 @keyframes pls{{0%,100%{{opacity:.4;transform:scale(.8)}}50%{{opacity:1;transform:scale(1.2)}}}}
-.rl-track{{overflow:hidden;width:100%;margin-left:118px}}
+.rl-track{{overflow:hidden;width:100%;margin-left:120px}}
 .rl-tk{{display:inline-flex;white-space:nowrap;animation:marq 26s linear infinite}}
 .rl-tk:hover{{animation-play-state:paused}}
-.rl-tk span{{color:#fff;font-weight:600;font-size:14px}}
-.rl-tk b{{color:#bff7d3;margin:0 14px}}
+.rl-tk span{{color:#eafff2;font-weight:600;font-size:14px}}
+.rl-tk b{{color:#7cf2a8;margin:0 14px}}
 @keyframes marq{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
 
 /* bits */
-.rl-brand{{display:flex;align-items:center;gap:10px;font-family:Georgia,serif;font-weight:700;font-size:24px;color:#103726}}
-.rl-leaf{{width:30px;height:30px;border-radius:50%;background:#169d57;display:flex;align-items:center;justify-content:center}}
-.rl-img{{height:120px;display:flex;align-items:center;justify-content:center;background:#f1f8f4;border-radius:12px;margin-bottom:8px;overflow:hidden}}
-.rl-tag{{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#e7f3ec;color:#0f7d44}}
-.rl-tag.rec{{background:#e2f1ef;color:#0a6e64}}
-.rl-name{{font-family:Georgia,serif;font-weight:600;font-size:16px;color:#16241c;margin:6px 0 2px}}
-.rl-meta{{font-size:12px;color:#5d6b63}}
-.rl-buyer{{display:inline-block;font-size:11px;font-weight:600;color:#0f7d44;background:#e7f3ec;padding:2px 8px;border-radius:999px;margin-top:3px}}
-.rl-price{{font-family:Georgia,serif;font-weight:700;font-size:17px;color:#103726;margin-top:3px}}
-.step{{background:#f1f8f4;border:1px solid #dcebE2;border-radius:14px;padding:14px 16px}}
-.stButton>button{{border-radius:10px;border:1px solid #cfe6d8;font-weight:600}}
-.stButton>button[kind="primary"]{{background:#169d57;border-color:#169d57}}
-hr{{margin:.9rem 0;border-color:#e7f0ea}}
+.rl-brand{{display:flex;align-items:center;gap:10px;font-weight:800;font-size:24px;color:#fff}}
+.rl-leaf{{width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,#34e89e,#1ba35d);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 18px rgba(52,232,158,.5)}}
+.rl-img{{height:120px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.06);border-radius:12px;margin-bottom:8px;overflow:hidden}}
+.rl-tag{{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;
+  background:rgba(52,232,158,.18);color:#9ff5c8 !important}}
+.rl-tag.rec{{background:rgba(80,200,210,.16);color:#9fe8e0 !important}}
+.rl-name{{font-weight:800;font-size:16px;color:#ffffff !important;margin:6px 0 2px}}
+.rl-meta{{font-size:12px;color:#a9d2bd !important}}
+.rl-buyer{{display:inline-block;font-size:11px;font-weight:600;color:#9ff5c8 !important;
+  background:rgba(52,232,158,.14);padding:2px 8px;border-radius:999px;margin-top:3px}}
+.rl-price{{font-weight:800;font-size:18px;color:#7cf2a8 !important;margin-top:3px}}
+.step{{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:14px;padding:16px;height:100%}}
+hr{{margin:.9rem 0;border-color:rgba(255,255,255,.12)}}
 </style>
+<div class="amb">
+  <b style="left:8%;animation-duration:17s;animation-delay:0s">🍃</b>
+  <b style="left:24%;animation-duration:23s;animation-delay:4s">🌿</b>
+  <b style="left:43%;animation-duration:19s;animation-delay:8s">🍃</b>
+  <b style="left:61%;animation-duration:26s;animation-delay:2s">🌿</b>
+  <b style="left:77%;animation-duration:21s;animation-delay:11s">🍃</b>
+  <b style="left:90%;animation-duration:24s;animation-delay:6s">🌿</b>
+</div>
 """, unsafe_allow_html=True)
 
 def ticker():
@@ -402,9 +456,9 @@ def page_home():
     st.write("")
     st.markdown("##### How it works")
     a, b, c = st.columns(3)
-    a.markdown("<div class='step'>**1 · Sell</b> 📦<br><span class='rl-meta'>List an item you don't need — with a photo and condition.</span></div>", unsafe_allow_html=True)
-    b.markdown("<div class='step'>**2 · Buy</b> 🛒<br><span class='rl-meta'>Browse the marketplace and add things to your cart.</span></div>", unsafe_allow_html=True)
-    c.markdown("<div class='step'>**3 · Loop</b> ♻️<br><span class='rl-meta'>Each item gets reused or remade — not dumped.</span></div>", unsafe_allow_html=True)
+    a.markdown("<div class='step'>**1 · Sell 📦<br><span class='rl-meta'>List an item you don't need — with a photo and condition.</span></div>", unsafe_allow_html=True)
+    b.markdown("<div class='step'>**2 · Buy 🛒<br><span class='rl-meta'>Browse the marketplace and add things to your cart.</span></div>", unsafe_allow_html=True)
+    c.markdown("<div class='step'>**3 · Loop ♻️<br><span class='rl-meta'>Each item gets reused or remade — not dumped.</span></div>", unsafe_allow_html=True)
 
     st.write("")
     st.markdown("##### What would you like to do?")
